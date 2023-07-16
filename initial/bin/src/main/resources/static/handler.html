@@ -1,0 +1,62 @@
+<html>
+<head>
+    <title>Browser Functions</title>
+  <!--   <script src="./bundle.js"></script>  -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.7"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@0.1.1"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.0.272/jspdf.debug.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>    
+	<script>
+	function  loadScript(url, callback){
+		// Create the script tag to load from the given url, call callback when done
+	    var script = document.createElement("script")
+	    script.type = "text/javascript";
+	    if (script.readyState){  //IE
+	        script.onreadystatechange = function(){
+	            if (script.readyState == "loaded" ||
+	                    script.readyState == "complete"){
+	                script.onreadystatechange = null;
+	                callback();
+	            }
+	        };
+	    } else {  //Others
+	        script.onload = function(){
+	            callback();
+	        };
+	    }
+
+	    script.src = url;
+	    document.getElementsByTagName("head")[0].appendChild(script);
+	}
+	
+	var socket = new SockJS('/gs-guide-websocket');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+        // Do a hello to make sure WS connection is good
+        stompClient.send("/app/hello", {}, JSON.stringify({'name': 'Dan'}));
+        stompClient.subscribe('/topic/greetings', function (greeting) {
+            showGreeting(greeting.body);            
+        });
+        // Ready to receive jobs!
+        stompClient.subscribe('/topic/job', function (jobJson) {      
+        	let job = JSON.parse(jobJson.body);
+        	console.log('Job data '+job.name+' with args '+job.args);
+        	loadScript("./"+job.name+".js", function(){
+        		theMain(job) 
+        	});	
+                       
+        });
+    });
+   
+    function showGreeting(message) {
+    	 console.log('Greeting: ' + message);
+    }
+
+	</script>
+</head>
+<body>
+Runner
+</body>
+</html>

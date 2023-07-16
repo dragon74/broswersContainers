@@ -1,0 +1,41 @@
+<html>
+<head>
+    <title>Classify</title>    
+    <!-- Load TensorFlow.js. This is required to use MobileNet. -->
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.7"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@0.1.1"></script>
+	<script>
+	
+	</script>
+</head>
+<body>
+<img id="img" crossorigin="anonymous" src=""></img>
+
+<script>
+    function main(args) {
+        var r = mobilenet.load().then(model => {
+            return new Promise(function(resolve, reject){
+                const img = document.getElementById('img');
+
+                img.onload = function(){
+                    // Classify the image.
+                    resolve(model.classify(img))
+                }
+
+                img.onerror = function(err){
+                    reject(err)
+                }
+
+                // get the image URL from the "img" argument
+                img.src = args.img || "./dog.jpg"
+            })
+        });
+        r.then(pred=> {
+        	console.log(pred);
+        });
+    }
+    main({});
+</script>
+Classify
+</body>
+</html>
